@@ -55,12 +55,13 @@ const Home: React.FC = () => {
             ))
           ) : (
             stats?.map((stat, index) => (
-              <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+              <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 relative">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">{stat.label}</p>
                     <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
                   </div>
+                  <p className="text-xl absolute top-5 right-5">{stat.icon}</p>
                 </div>
               </div>
             ))
