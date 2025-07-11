@@ -1,3 +1,4 @@
+// src/components/Layout.tsx
 import React, { useState } from 'react';
 import Sidebar from './SideBar';
 
@@ -38,10 +39,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Sidebar - Responsive */}
-      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
-        <Sidebar />
-      </div>
+      {/* Sidebar - Solo renderizado aquí */}
+      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
 
       {/* Contenido Principal */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -50,9 +49,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {children}
         </main>
       </div>
-
-      {/* Sidebar móvil */}
-      <Sidebar isMobileMenuOpen={isMobileMenuOpen} setIsMobileMenuOpen={setIsMobileMenuOpen} />
     </div>
   );
 };

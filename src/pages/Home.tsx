@@ -12,8 +12,8 @@ const Home: React.FC = () => {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white">
-        <div className="max-w-4xl mx-auto">
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-2xl p-8 text-white text-center">
+        <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold mb-4">
             {isAuthenticated
               ? `¡Bienvenid@ de vuelta, ${usuario?.nombre}!`
