@@ -2,16 +2,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useStatsSummary } from '../hooks/useStats';
 
 const Home: React.FC = () => {
   const { isAuthenticated, usuario } = useAuth();
 
-  const stats = [
-    { label: 'Dispositivos Activos', value: '12', change: '+2', changeType: 'positive' },
-    { label: 'Temperatura Promedio', value: '24°C', change: '-1°C', changeType: 'negative' },
-    { label: 'Humedad', value: '65%', change: '+3%', changeType: 'positive' },
-    { label: 'Alertas Activas', value: '3', change: '-1', changeType: 'negative' },
-  ];
+  const { stats, isLoading } = useStatsSummary();
 
   return (
     <div className="space-y-8">
@@ -41,29 +37,34 @@ const Home: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {isAuthenticated && (
+       {/* Stats Cards */}
+       {isAuthenticated && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                </div>
-                <div className={`flex items-center text-sm ${
-                  stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  <span>{stat.change}</span>
-                  <svg className={`w-4 h-4 ml-1 ${
-                    stat.changeType === 'positive' ? 'rotate-0' : 'rotate-180'
-                  }`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                  </svg>
+          {isLoading ? (
+            // Loading skeleton
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="h-4 bg-gray-200 rounded w-12"></div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            stats?.map((stat, index) => (
+              <div key={index} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.label}</p>
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       )}
 
