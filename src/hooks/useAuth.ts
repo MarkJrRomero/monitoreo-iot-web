@@ -104,6 +104,8 @@ export const useAuth = () => {
       token: null,
       isAuthenticated: false,
     });
+
+    //Obtener el usu
     
     // Limpiar cache de React Query
     queryClient.clear();

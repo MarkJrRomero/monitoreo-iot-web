@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useStatsSummary } from '../hooks/useStats';
+import { VehicleMap } from '../components/VehicleMap';
 
 const Home: React.FC = () => {
   const { isAuthenticated, usuario } = useAuth();
@@ -68,6 +69,17 @@ const Home: React.FC = () => {
           )}
         </div>
       )}
+
+    <div className="flex flex-col mt-8">
+        <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">Mapa en Tiempo Real</h1>
+          <p className="text-sm text-gray-500">Ubicación de vehículos en tiempo real</p>
+        </div>
+        
+        <div className="flex-1 relative">
+          <VehicleMap />
+        </div>
+      </div>
 
      </div>
   );
