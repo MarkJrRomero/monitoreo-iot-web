@@ -1,14 +1,25 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { useStats } from '../hooks/useStats';
 import { useVehicleWebSocket } from '../hooks/useVehicleWebSocket';
 import { useAuth } from '../hooks/useAuth';
 import { maskDeviceId } from '../config/utils';
 import type { VehicleAlert } from '../models/vehiclel';
 
+// Tipo específico para alertas en tiempo real
+interface RealTimeAlert {
+  dispositivo_id: string;
+  tipo_alerta: string;
+  combustible: number;
+  temperatura: number;
+  velocidad: number;
+  estado: string;
+  isRealTime: boolean;
+}
+
 const Alertas: React.FC = () => {
   const { alerts, vehicles, isLoading } = useStats();
   const { usuario } = useAuth();
-  const [realTimeAlerts, setRealTimeAlerts] = useState<any[]>([]);
+  const [realTimeAlerts, setRealTimeAlerts] = useState<RealTimeAlert[]>([]);
   const [shouldRefetchAlerts, setShouldRefetchAlerts] = useState(false);
 
   // Callback para manejar alertas en tiempo real
@@ -17,26 +28,27 @@ const Alertas: React.FC = () => {
     
     // Agregar la nueva alerta al estado local
     setRealTimeAlerts(prev => {
-      const newAlert = {
+      const newAlert: RealTimeAlert = {
         dispositivo_id: alert.alert.datos.dispositivo_id,
         tipo_alerta: alert.alert.tipo,
         combustible: alert.alert.datos.combustible,
         temperatura: alert.alert.datos.temperatura,
         velocidad: alert.alert.datos.velocidad,
         estado: alert.alert.datos.estado,
-        timestamp: alert.timestamp
+        isRealTime: true,
       };
       
       // Evitar duplicados basándose en dispositivo_id y timestamp
-      const existingIndex = prev.findIndex(a => 
-        a.dispositivo_id === newAlert.dispositivo_id && 
-        a.timestamp === newAlert.timestamp
-      );
+      const existingIndex = prev.findIndex(a => a.dispositivo_id === newAlert.dispositivo_id);
       
       if (existingIndex >= 0) {
-        return prev; // Ya existe esta alerta
+        // Si ya existe, actualizar la alerta existente en lugar de agregar una nueva
+        const updatedAlerts = [...prev];
+        updatedAlerts[existingIndex] = newAlert;
+        return updatedAlerts;
       }
       
+      // Si no existe, agregar al inicio del array
       return [newAlert, ...prev];
     });
     
@@ -57,6 +69,27 @@ const Alertas: React.FC = () => {
     }
   }, [shouldRefetchAlerts]);
 
+  // Combinar alertas estáticas con alertas en tiempo real, evitando duplicados
+  const allAlerts = useMemo(() => {
+    // Crear un Map para evitar duplicados basándose en dispositivo_id
+    const alertsMap = new Map<string, RealTimeAlert | (typeof alerts[0] & { isRealTime: boolean })>();
+    
+    // Agregar alertas estáticas primero
+    alerts.forEach(alert => {
+      alertsMap.set(alert.dispositivo_id, {
+        ...alert,
+        isRealTime: false,
+      });
+    });
+    
+    // Agregar alertas en tiempo real, sobrescribiendo las estáticas si existen
+    realTimeAlerts.forEach(alert => {
+      alertsMap.set(alert.dispositivo_id, alert);
+    });
+    
+    return Array.from(alertsMap.values());
+  }, [alerts, realTimeAlerts]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -74,9 +107,6 @@ const Alertas: React.FC = () => {
     const vehicle = vehicles.find(v => v.dispositivo_id === dispositivo_id);
     return vehicle?.dispositivo_id || '';
   };
-
-  // Combinar alertas estáticas con alertas en tiempo real
-  const allAlerts = [...realTimeAlerts, ...alerts];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -117,9 +147,9 @@ const Alertas: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {allAlerts.map((alert, index) => (
             <div
-              key={`${alert.dispositivo_id}-${alert.timestamp}-${index}`}
+              key={`${alert.dispositivo_id}-${index}`}
               className={`bg-white rounded-lg shadow-md border-l-4 p-6 hover:shadow-lg transition-shadow ${
-                realTimeAlerts.some(rt => rt.dispositivo_id === alert.dispositivo_id && rt.timestamp === alert.timestamp)
+                alert.isRealTime
                   ? 'border-red-500 animate-pulse'
                   : 'border-orange-500'
               }`}
@@ -135,7 +165,7 @@ const Alertas: React.FC = () => {
                       : maskDeviceId(getVehicleDeviceId(alert.dispositivo_id), usuario?.rol)
                     }
                   </p>
-                  {realTimeAlerts.some(rt => rt.dispositivo_id === alert.dispositivo_id && rt.timestamp === alert.timestamp) && (
+                  {alert.isRealTime && (
                     <span className="inline-block mt-1 px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
                       NUEVA
                     </span>
