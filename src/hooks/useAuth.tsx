@@ -107,6 +107,9 @@ export const useAuth = () => {
     
     // Limpiar cache de React Query
     queryClient.clear();
+
+    //Redirigir a la página de autenticación
+    window.location.href = '/';
   };
 
   // Función para login
