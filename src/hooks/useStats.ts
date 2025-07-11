@@ -129,9 +129,10 @@ export const useStats = () => {
 // Hook específico para estadísticas resumidas
 export const useStatsSummary = () => {
   const { stats, isLoading, isError } = useStats();
+  const { usuario } = useAuth();
   const summaryStats = React.useMemo(() => {
     if (!stats) return null;
-    
+    if(usuario?.rol === 'admin'){ 
     return [
       {
         label: 'Vehículos Activos',
@@ -148,20 +149,52 @@ export const useStatsSummary = () => {
         icon: '⚠️',
       },
       {
-        label: 'Combustible Promedio de las alertas',
+        label: 'Combustible Promedio',
         value: `${stats.averageFuel}%`,
         change: stats.averageFuel < 20 ? 'Bajo' : 'Normal',
         changeType: stats.averageFuel < 20 ? 'negative' as const : 'positive' as const,
         icon: '⛽',
       },
       {
-        label: 'Temperatura Promedio de las alertas',
+        label: 'Temperatura Promedio',
         value: `${stats.averageTemperature}°C` || '0',
         change: stats.averageTemperature > 80 ? 'Alta' : 'Normal',
         changeType: stats.averageTemperature > 80 ? 'negative' as const : 'positive' as const,
         icon: '🌡️',
       },
     ];
+  }else{
+    return [
+      {
+        label: 'Vehículos Activos',
+        value: stats.totalVehicles.toString(),
+        change: '+2',
+        changeType: 'positive' as const,
+        icon: '🚗',
+      },
+      {
+        label: 'Alertas Activas',
+        value: "🛡️",
+        change: stats.totalAlerts > 0 ? `+${stats.totalAlerts}` : '0',
+        changeType: stats.totalAlerts > 0 ? 'negative' as const : 'positive' as const,
+        icon: '⚠️',
+      },
+      {
+        label: 'Combustible Promedio',
+        value: "🛡️",
+        change: stats.averageFuel < 20 ? 'Bajo' : 'Normal',
+        changeType: stats.averageFuel < 20 ? 'negative' as const : 'positive' as const,
+        icon: '⛽',
+      },
+      {
+        label: 'Temperatura Promedio',
+        value: "🛡️",
+        change: stats.averageTemperature > 80 ? 'Alta' : 'Normal',
+        changeType: stats.averageTemperature > 80 ? 'negative' as const : 'positive' as const,
+        icon: '🌡️',
+      },
+    ];
+  }
   }, [stats]);
   
   return {

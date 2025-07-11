@@ -12,6 +12,7 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
   const subscribedVehiclesRef = useRef<Set<string>>(new Set());
   const isConnectingRef = useRef(false);
   const vehiclesRef = useRef<Vehicle[]>([]);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   useEffect(() => {
     vehiclesRef.current = vehicles;
@@ -22,7 +23,6 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
       alert('Debes hacer login primero');
       return;
     }
-    
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = import.meta.env.VITE_API_WS_HOST;
     const wsUrl = `${protocol}//${host}/ws?token=${token}`;
@@ -30,9 +30,14 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
 
     wsRef.current = ws;
 
+    setIsReconnecting(true);
+    console.log("Iniciando conexión");
+    
+
     ws.onopen = function() {
       console.log('WebSocket connected');
       setIsConnected(true);
+      setIsReconnecting(false);
     };
 
     ws.onmessage = function(event) {
@@ -57,6 +62,7 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
     ws.onclose = function(event) {
       setIsConnected(false);
       console.error('[WebSocket] Disconnected', event.code, event.reason);
+      setIsReconnecting(false);
     };
 
     ws.onerror = function(error) {
@@ -64,7 +70,9 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
       console.error('[WebSocket] Error', error);
       setIsConnected(false);
       isConnectingRef.current = false;
+      setIsReconnecting(false);
     };
+
   }, [token]);
 
   const disconnect = useCallback(() => {
@@ -135,5 +143,6 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
     connect,
     disconnect,
     subscribedVehicles: Array.from(subscribedVehiclesRef.current),
+    isReconnecting,
   };
 };
