@@ -7,6 +7,7 @@ interface MenuItem {
   path: string;
   icon: React.ReactNode;
   badge?: number;
+  admin?: boolean;
 }
 
 const Sidebar: React.FC = () => {
@@ -16,7 +17,7 @@ const Sidebar: React.FC = () => {
   const menuItems: MenuItem[] = [
     {
       name: 'Dashboard',
-      path: '/dashboard',
+      path: '/',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -24,13 +25,14 @@ const Sidebar: React.FC = () => {
       ),
     },
     {
-      name: 'Dispositivos',
-      path: '/dispositivos',
+      name: 'Simulador',
+      path: '/simulador',
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 12v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
+      admin: true,
     },
   ];
 
@@ -56,7 +58,11 @@ const Sidebar: React.FC = () => {
 
       {/* Menú de Navegación */}
       <nav className="flex-1 px-4 py-6 space-y-2">
-        {menuItems.map((item) => (
+        {menuItems.map((item) => {
+          if(item.admin && usuario?.rol !== 'admin'){
+            return null;
+          }
+          return (
           <Link
             key={item.path}
             to={item.path}
@@ -78,7 +84,8 @@ const Sidebar: React.FC = () => {
               </span>
             )}
           </Link>
-        ))}
+          )
+        })}
       </nav>
 
       {/* Footer del Sidebar */}
