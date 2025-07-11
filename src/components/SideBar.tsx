@@ -87,7 +87,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen, setIsMobileMenuOpen
       {/* Overlay para móviles */}
       {isMobileMenuOpen && (
         <div 
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="lg:hidden fixed inset-0 backdrop-blur-sm z-40"
           onClick={() => setIsMobileMenuOpen?.(false)}
         />
       )}
