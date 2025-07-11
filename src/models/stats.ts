@@ -12,7 +12,7 @@ export interface Vehicle {
   velocidad: string;
 }
 
-export interface VehicleAlert extends Vehicle {
+export interface VehicleAlertDashboard extends Vehicle {
   tipo_alerta: string;
 }
 

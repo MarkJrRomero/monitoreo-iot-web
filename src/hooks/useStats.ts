@@ -1,13 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { type ApiResponse, type Vehicle, type VehicleAlert, type Stats } from '../models/stats';
+import { type ApiResponse, type Vehicle, type VehicleAlertDashboard, type Stats } from '../models/stats';
 import { getApiUrl } from '../config/env';
 import { useAuth } from './useAuth';
 
 // Función para obtener vehículos
-const fetchVehicles = async (headers: HeadersInit): Promise<ApiResponse<Vehicle>> => {
+const fetchVehicles = async (headers: HeadersInit, logout: () => void): Promise<ApiResponse<Vehicle>> => {
   const response = await fetch(getApiUrl('/api/vehicles'), { headers });
   
+  if(response.status === 401 || response.status === 403){
+    logout();
+    window.location.href = '/';
+  }
+
   if (!response.ok) {
     throw new Error('Error al obtener vehículos');
   }
@@ -16,9 +21,14 @@ const fetchVehicles = async (headers: HeadersInit): Promise<ApiResponse<Vehicle>
 };
 
 // Función para obtener alertas
-const fetchVehicleAlerts = async (headers: HeadersInit): Promise<ApiResponse<VehicleAlert>> => {
+const fetchVehicleAlerts = async (headers: HeadersInit, logout: () => void): Promise<ApiResponse<VehicleAlertDashboard>> => {
   const response = await fetch(getApiUrl('/api/vehicles/alerts'), { headers });
   
+  if(response.status === 401 || response.status === 403){
+    logout();
+    window.location.href = '/';
+  }
+
   if (!response.ok) {
     throw new Error('Error al obtener alertas');
   }
@@ -27,7 +37,7 @@ const fetchVehicleAlerts = async (headers: HeadersInit): Promise<ApiResponse<Veh
 };
 
 // Función para calcular estadísticas
-const calculateStats = (vehicles: Vehicle[], alerts: VehicleAlert[]): Stats => {
+const calculateStats = (vehicles: Vehicle[], alerts: VehicleAlertDashboard[]): Stats => {
   const totalVehicles = vehicles.length;
   const totalAlerts = alerts.length;
   
@@ -66,22 +76,18 @@ const calculateStats = (vehicles: Vehicle[], alerts: VehicleAlert[]): Stats => {
 };
 
 export const useStats = () => {
-  const { getAuthHeaders } = useAuth();
+  const { getAuthHeaders, logout } = useAuth();
 
   // Query para vehículos
   const vehiclesQuery = useQuery({
     queryKey: ['vehicles'],
-    queryFn: () => fetchVehicles(getAuthHeaders() as HeadersInit),
-    refetchInterval: 30000, // Refrescar cada 30 segundos
-    staleTime: 10000, // Considerar datos frescos por 10 segundos
+    queryFn: () => fetchVehicles(getAuthHeaders() as HeadersInit, logout),
   });
 
   // Query para alertas
   const alertsQuery = useQuery({
     queryKey: ['vehicle-alerts'],
-    queryFn: () => fetchVehicleAlerts(getAuthHeaders() as HeadersInit),
-    refetchInterval: 15000, // Refrescar cada 15 segundos
-    staleTime: 5000, // Considerar datos frescos por 5 segundos
+    queryFn: () => fetchVehicleAlerts(getAuthHeaders() as HeadersInit, logout),
   });
 
   // Calcular estadísticas cuando ambos queries estén listos
@@ -123,7 +129,6 @@ export const useStats = () => {
 // Hook específico para estadísticas resumidas
 export const useStatsSummary = () => {
   const { stats, isLoading, isError } = useStats();
-  
   const summaryStats = React.useMemo(() => {
     if (!stats) return null;
     
@@ -137,21 +142,21 @@ export const useStatsSummary = () => {
       },
       {
         label: 'Alertas Activas',
-        value: stats.totalAlerts.toString(),
+        value: stats.totalAlerts.toString() || '0',
         change: stats.totalAlerts > 0 ? `+${stats.totalAlerts}` : '0',
         changeType: stats.totalAlerts > 0 ? 'negative' as const : 'positive' as const,
         icon: '⚠️',
       },
       {
-        label: 'Combustible Promedio',
+        label: 'Combustible Promedio de las alertas',
         value: `${stats.averageFuel}%`,
         change: stats.averageFuel < 20 ? 'Bajo' : 'Normal',
         changeType: stats.averageFuel < 20 ? 'negative' as const : 'positive' as const,
         icon: '⛽',
       },
       {
-        label: 'Temperatura Promedio',
-        value: `${stats.averageTemperature}°C`,
+        label: 'Temperatura Promedio de las alertas',
+        value: `${stats.averageTemperature}°C` || '0',
         change: stats.averageTemperature > 80 ? 'Alta' : 'Normal',
         changeType: stats.averageTemperature > 80 ? 'negative' as const : 'positive' as const,
         icon: '🌡️',
@@ -164,6 +169,10 @@ export const useStatsSummary = () => {
     isLoading,
     isError,
     rawStats: stats,
+    refetchStats: () => {
+      useStats().refetchVehicles();
+      useStats().refetchAlerts();
+    }
   };
 };
 

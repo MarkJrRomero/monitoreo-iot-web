@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { type Vehicle } from '../models/stats';
+import type { WebSocketMessage, VehicleAlert } from '../models/vehiclel';
 
-export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
+export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: VehicleAlert) => void) => {
   const { token } = useAuth();
   const [vehicleData, setVehicleData] = useState<Record<string, Vehicle>>({});
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const subscribedVehiclesRef = useRef<Set<string>>(new Set()); // <- Usamos código string
+  const subscribedVehiclesRef = useRef<Set<string>>(new Set());
   const isConnectingRef = useRef(false);
   const vehiclesRef = useRef<Vehicle[]>([]);
 
@@ -16,48 +17,55 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
     vehiclesRef.current = vehicles;
   }, [vehicles]);
 
-  function connect() {
+  const connect = useCallback(() => {
     if (!token) {
-        alert('Debes hacer login primero');
-        return;
+      alert('Debes hacer login primero');
+      return;
     }
     
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = import.meta.env.VITE_API_URL;
-    const wsUrl = `${protocol}//${host}?token=${token}`;
-    
-    console.log('Conectando a:', wsUrl);
-    
+    const host = import.meta.env.VITE_API_WS_HOST;
+    const wsUrl = `${protocol}//${host}/ws?token=${token}`;
     const ws = new WebSocket(wsUrl);
 
+    wsRef.current = ws;
+
     ws.onopen = function() {
-        setIsConnected(true);
-        console.log('Conexión establecida y autenticada');
+      console.log('WebSocket connected');
+      setIsConnected(true);
     };
 
     ws.onmessage = function(event) {
-        console.log('Mensaje recibido:', event.data);
-        try {
-            const data = JSON.parse(event.data);
-            console.log('[WebSocket] Received:', data);
-        } catch (error) {
-            console.error('[WebSocket] Error parsing message', error);
+      try {
+        const data = JSON.parse(event.data) as WebSocketMessage;
+        if (data.type === 'sensor_data' && data.vehicleId && data.data) {
+          setVehicleData(prev => ({
+            ...prev,
+            [String(data.vehicleId)]: data.data as Vehicle
+          }));
         }
+
+        if (data.type === 'alert') {
+          if (onAlert) onAlert(data as VehicleAlert);
+        }
+
+      } catch (error) {
+        console.error('[WebSocket] Error parsing message', error);
+      }
     };
 
     ws.onclose = function(event) {
-        setIsConnected(false);
-        console.log('[WebSocket] Disconnected', event.code, event.reason);
+      setIsConnected(false);
+      console.error('[WebSocket] Disconnected', event.code, event.reason);
     };
 
     ws.onerror = function(error) {
-        console.error('Error en WebSocket:', error);
-        console.error('[WebSocket] Error', error);
-        setIsConnected(false);
-        isConnectingRef.current = false;
+      console.error('Error en WebSocket:', error);
+      console.error('[WebSocket] Error', error);
+      setIsConnected(false);
+      isConnectingRef.current = false;
     };
-    
-  }
+  }, [token]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -66,7 +74,6 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
     }
 
     if (wsRef.current) {
-      console.log('[WebSocket] Disconnecting...');
       subscribedVehiclesRef.current.forEach(vehicleCode => {
         const message = { type: 'unsubscribe', vehicleId: vehicleCode };
         wsRef.current?.send(JSON.stringify(message));
@@ -86,7 +93,7 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
 
     const currentVehicles = vehiclesRef.current;
     currentVehicles.forEach(vehicle => {
-      const vehicleCode = vehicle.id.toString();
+      const vehicleCode = vehicle.dispositivo_id;
       if (!subscribedVehiclesRef.current.has(vehicleCode)) {
         const message = { type: 'subscribe', vehicleId: vehicleCode };
         wsRef.current?.send(JSON.stringify(message));
@@ -96,7 +103,7 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
   }, [isConnected]);
 
   useEffect(() => {
-    if (token && vehicles.length > 0) {
+    if (token) {
       connect();
     }
 
@@ -104,6 +111,8 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
       disconnect();
     };
   }, [token, connect, disconnect]);
+
+
 
   useEffect(() => {
     if (isConnected && vehicles.length > 0) {
@@ -125,6 +134,6 @@ export const useVehicleWebSocket = (vehicles: Vehicle[]) => {
     isConnected,
     connect,
     disconnect,
-    subscribedVehicles: Array.from(subscribedVehiclesRef.current)
+    subscribedVehicles: Array.from(subscribedVehiclesRef.current),
   };
 };
