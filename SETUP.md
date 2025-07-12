@@ -8,11 +8,11 @@ Antes de comenzar, asegúrate de tener instalado:
 - **npm** o **yarn**
 - **Git**
 
-## ��️ Instalación
+## Instalación
 
 ### 1. Clonar el repositorio
 ```bash
-git clone <url-del-repositorio>
+git clone https://github.com/MarkJrRomero/monitoreo-iot-web.git
 cd monitoreo-iot-web
 ```
 
@@ -31,8 +31,6 @@ Crea un archivo `.env` en la raíz del proyecto:
 VITE_API_URL=http://localhost:3000
 VITE_API_WS_HOST=localhost:3000
 
-# Development
-VITE_DEV_MODE=true
 ```
 
 ### 4. Verificar configuración
@@ -73,7 +71,7 @@ yarn preview
 | `npm run lint` | Ejecuta ESLint |
 | `npm run type-check` | Verifica tipos TypeScript |
 
-## �� Estructura de URLs
+## Estructura de URLs
 
 ### Rutas Principales
 - `/` - Dashboard principal
@@ -83,6 +81,6 @@ yarn preview
 - `/ingesta` - Ingesta de datos (solo admin)
 - `/simulador` - Control de simulador (solo admin)
 
-## �� Credenciales de Prueba
+## Credenciales de Prueba
 
 ### Usuario Administrador
