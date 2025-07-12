@@ -54,12 +54,12 @@ export const VehicleMap = () => {
           </strong>
         </div>,
         {
-          position: "top-right",
+          position: "bottom-right",
           autoClose: 5000,
           hideProgressBar: false,
-          closeOnClick: false,
+          closeOnClick: true,
           pauseOnFocusLoss: false,
-          draggable: false,
+          draggable: true,
           pauseOnHover: false,
           theme: "light",
           closeButton: false,

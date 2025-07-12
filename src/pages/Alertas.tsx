@@ -24,7 +24,6 @@ const Alertas: React.FC = () => {
 
   // Callback para manejar alertas en tiempo real
   const handleRealTimeAlert = useCallback((alert: VehicleAlert) => {
-    console.log('Alerta en tiempo real recibida:', alert);
     
     // Agregar la nueva alerta al estado local
     setRealTimeAlerts(prev => {

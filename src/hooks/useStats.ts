@@ -130,7 +130,6 @@ export const useStats = () => {
 export const useStatsSummary = () => {
   const { stats, isLoading, isError, refetchVehicles, refetchAlerts } = useStats();
   const { usuario } = useAuth();
-  console.log(stats);
   const summaryStats = React.useMemo(() => {
     if (!stats) return null;
     if(usuario?.rol === 'admin'){ 

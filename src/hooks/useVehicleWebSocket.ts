@@ -31,11 +31,9 @@ export const useVehicleWebSocket = (vehicles: Vehicle[], onAlert: (alert: Vehicl
     wsRef.current = ws;
 
     setIsReconnecting(true);
-    console.log("Iniciando conexión");
     
 
     ws.onopen = function() {
-      console.log('WebSocket connected');
       setIsConnected(true);
       setIsReconnecting(false);
     };
