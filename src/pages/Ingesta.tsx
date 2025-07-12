@@ -4,7 +4,7 @@ import { useIngesta } from '../hooks/useIngesta';
 import { useVehicles } from '../hooks/useVehiculos';
 import { useAuth } from '../hooks/useAuth';
 import { maskDeviceId } from '../config/utils';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 interface SensorFormData {
@@ -227,8 +227,6 @@ const Ingesta: React.FC = () => {
           </ul>
         </div>
       </div>
-
-      <ToastContainer />
     </div>
   );
 };

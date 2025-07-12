@@ -55,7 +55,7 @@ const Home: React.FC = () => {
               Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 animate-pulse"
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-200"
                 >
                   <div className="flex items-center justify-between">
                     <div className="space-y-2">

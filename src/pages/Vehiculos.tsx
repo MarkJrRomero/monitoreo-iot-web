@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useVehicles, useCreateVehicle, useUpdateVehicle, useDeleteVehicle } from '../hooks/useVehiculos';
 import { useAuth } from '../hooks/useAuth';
 import { maskDeviceId } from '../config/utils';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 
@@ -261,8 +261,6 @@ const Vehiculos: React.FC = () => {
           </div>
         </div>
       )}
-
-      <ToastContainer />
     </div>
   );
 };
