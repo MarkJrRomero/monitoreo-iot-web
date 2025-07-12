@@ -45,7 +45,7 @@ const calculateStats = (vehicles: Vehicle[], alerts: VehicleAlertDashboard[]): S
   const vehiclesWithAlerts = new Set(alerts.map(alert => alert.id)).size;
   
   // Promedios
-  const averageFuel = vehicles.length > 0 
+  const averageFuel = vehicles.length > 0
     ? vehicles.reduce((sum, vehicle) => sum + parseFloat(vehicle.combustible), 0) / vehicles.length
     : 0;
     
@@ -68,9 +68,9 @@ const calculateStats = (vehicles: Vehicle[], alerts: VehicleAlertDashboard[]): S
     totalVehicles,
     totalAlerts,
     vehiclesWithAlerts,
-    averageFuel: Math.round(averageFuel),
-    averageTemperature: Math.round(averageTemperature),
-    averageSpeed: Math.round(averageSpeed),
+    averageFuel: Math.round(averageFuel) || 0,
+    averageTemperature: Math.round(averageTemperature) || 0,
+    averageSpeed: Math.round(averageSpeed) || 0,
     alertTypes,
   };
 };
@@ -128,8 +128,9 @@ export const useStats = () => {
 
 // Hook específico para estadísticas resumidas
 export const useStatsSummary = () => {
-  const { stats, isLoading, isError } = useStats();
+  const { stats, isLoading, isError, refetchVehicles, refetchAlerts } = useStats();
   const { usuario } = useAuth();
+  console.log(stats);
   const summaryStats = React.useMemo(() => {
     if (!stats) return null;
     if(usuario?.rol === 'admin'){ 
@@ -157,7 +158,7 @@ export const useStatsSummary = () => {
       },
       {
         label: 'Temperatura Promedio',
-        value: `${stats.averageTemperature}°C` || '0',
+        value: `${stats.averageTemperature}°C`,
         change: stats.averageTemperature > 80 ? 'Alta' : 'Normal',
         changeType: stats.averageTemperature > 80 ? 'negative' as const : 'positive' as const,
         icon: '🌡️',
@@ -203,8 +204,8 @@ export const useStatsSummary = () => {
     isError,
     rawStats: stats,
     refetchStats: () => {
-      useStats().refetchVehicles();
-      useStats().refetchAlerts();
+      refetchVehicles();
+      refetchAlerts();
     }
   };
 };

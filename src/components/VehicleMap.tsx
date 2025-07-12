@@ -175,7 +175,7 @@ export const VehicleMap = () => {
       <MapContainer
         center={[4.65, -74.1]}
         zoom={11}
-        style={{ height: "600px", width: "100%" }}
+        style={{ height: "500px", width: "100%" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {vehicles.map((vehicle) => {
